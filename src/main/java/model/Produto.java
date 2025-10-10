@@ -25,4 +25,44 @@ public class Produto implements Serializable {
         this.quantidadeMaxima = quantidadeMaxima;
         this.categoria = categoria;
     }
+
+    public String getUnidade() {
+        return unidade;
+    }
+
+    public void setUnidade(String unidade) {
+        this.unidade = unidade;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public double getPrecoUnitario() {
+        return precoUnitario;
+    }
+
+    public int getQuantidade() {
+        return quantidade;
+    }
+
+    public int getQuantidadeMinima() {
+        return quantidadeMinima;
+    }
+
+    public int getQuantidadeMaxima() {
+        return quantidadeMaxima;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
+    }
 }
