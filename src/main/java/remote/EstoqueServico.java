@@ -11,4 +11,5 @@ public interface EstoqueServico extends Remote {
     String registrarMovimentacao(Movimentacao m) throws RemoteException;
     List<Produto> listarProdutos() throws RemoteException;
     void editarProduto(Produto p) throws RemoteException;
+    void excluirProduto(int id) throws RemoteException;
 }
