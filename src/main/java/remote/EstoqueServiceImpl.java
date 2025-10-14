@@ -36,4 +36,49 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
 
     }
 
+    // Adicionar
+    public void adicionarProduto(Produto p) throws RemoteException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "INSERT INTO produto(nome, preco, unidade, quantidade, qtdMin, qtdMax, categoria) VALUES (?,?,?,?,?,?,?)")) {
+            ps.setString(1, p.getNome());
+            ps.setDouble(2, p.getPrecoUnitario());
+            ps.setString(3, p.getUnidade());
+            ps.setInt(4, p.getQuantidade());
+            ps.setInt(5, p.getQuantidadeMinima());
+            ps.setInt(6, p.getQuantidadeMaxima());
+            ps.setString(7, p.getCategoria());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RemoteException("Erro ao inserir produto", e);
+        }
+    }
+
+    // Editar
+    public void editarProduto(Produto p) throws RemoteException {
+        try (PreparedStatement ps = conn.prepareStatement(
+                "UPDATE produto SET nome=?, preco=?, unidade=?, quantidade=?, qtdMin=?, qtdMax=?, categoria=? WHERE id=?")) {
+            ps.setString(1, p.getNome());
+            ps.setDouble(2, p.getPrecoUnitario());
+            ps.setString(3, p.getUnidade());
+            ps.setInt(4, p.getQuantidade());
+            ps.setInt(5, p.getQuantidadeMinima());
+            ps.setInt(6, p.getQuantidadeMaxima());
+            ps.setString(7, p.getCategoria());
+            ps.setInt(8, p.getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RemoteException("Erro ao editar produto", e);
+        }
+    }
+
+    // Excluir
+    public void excluirProduto(int id) throws RemoteException {
+        try (PreparedStatement ps = conn.prepareStatement("DELETE FROM produto WHERE id = ?")) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RemoteException("Erro ao excluir produto", e);
+        }
+    }
+
 }
