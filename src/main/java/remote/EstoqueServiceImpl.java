@@ -121,4 +121,22 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
+    public List<Produto> listarProdutos() throws RemoteException {
+        List<Produto> lista = new ArrayList<>();
+        try (Statement st = conn.createStatement()) {
+            ResultSet rs = st.executeQuery("SELECT * FROM produto ORDER BY nome");
+            while (rs.next()) {
+                lista.add(new Produto(
+                        rs.getInt("id"), rs.getString("nome"),
+                        rs.getDouble("preco"), rs.getString("unidade"),
+                        rs.getInt("quantidade"), rs.getInt("qtdMin"),
+                        rs.getInt("qtdMax"), rs.getString("categoria")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RemoteException("Erro ao listar produtos", e);
+        }
+        return lista;
+    }
+
 }
