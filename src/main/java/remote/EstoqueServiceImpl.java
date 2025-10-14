@@ -81,4 +81,44 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
+    public String registrarMovimentacao(Movimentacao m) throws RemoteException {
+        try {
+            Produto p = null;
+            try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM produto WHERE id = ?")) {
+                ps.setInt(1, m.getIdProduto());
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    p = new Produto(
+                            rs.getInt("id"), rs.getString("nome"),
+                            rs.getDouble("preco"), rs.getString("unidade"),
+                            rs.getInt("quantidade"), rs.getInt("qtdMin"),
+                            rs.getInt("qtdMax"), rs.getString("categoria")
+                    );
+                }
+            }
+            if (p == null) {
+                return "Produto não encontrado!";
+            }
+
+            int novoEstoque = p.getQuantidade()
+                    + (m.getTipo() == Movimentacao.Tipo.ENTRADA ? m.getQuantidade() : -m.getQuantidade());
+
+            try (PreparedStatement ps = conn.prepareStatement("UPDATE produto SET quantidade = ? WHERE id = ?")) {
+                ps.setInt(1, novoEstoque);
+                ps.setInt(2, p.getId());
+                ps.executeUpdate();
+            }
+
+            if (novoEstoque < p.getQuantidadeMinima()) {
+                return "Atenção: produto abaixo do mínimo!";
+            }
+            if (novoEstoque > p.getQuantidadeMaxima()) {
+                return "Atenção: produto acima do máximo!";
+            }
+            return "Movimentação registrada com sucesso!";
+        } catch (SQLException e) {
+            throw new RemoteException("Erro na movimentação", e);
+        }
+    }
+
 }
