@@ -7,10 +7,18 @@ import java.util.*;
 import model.Movimentacao;
 import model.Produto;
 
+/**
+ * Implementação do serviço de estoque via RMI. Realiza operações no banco
+ * SQLite como: - adicionar produtos - editar produtos - excluir - movimentar
+ * estoque - listar produtos
+ */
 public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueServico {
 
-    private final Connection conn;
+    private final Connection conn; // Conexão com o banco SQLite
 
+    /**
+     * Construtor. Inicia a conexão com o banco e cria tabelas se necessário.
+     */
     public EstoqueServiceImpl() throws RemoteException {
         super();
         try {
@@ -21,6 +29,9 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
+    /**
+     * Cria as tabelas do banco caso não existam.
+     */
     private void inicializarTabelas() throws SQLException {
         try (Statement st = conn.createStatement()) {
             st.executeUpdate("CREATE TABLE IF NOT EXISTS produto ("
@@ -33,10 +44,11 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
                     + "qtdMax INTEGER,"
                     + "categoria TEXT)");
         }
-
     }
 
-    // Adicionar
+    /**
+     * Insere um novo produto no banco.
+     */
     public void adicionarProduto(Produto p) throws RemoteException {
         try (PreparedStatement ps = conn.prepareStatement(
                 "INSERT INTO produto(nome, preco, unidade, quantidade, qtdMin, qtdMax, categoria) VALUES (?,?,?,?,?,?,?)")) {
@@ -53,7 +65,9 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
-    // Editar
+    /**
+     * Atualiza os dados de um produto no banco.
+     */
     public void editarProduto(Produto p) throws RemoteException {
         try (PreparedStatement ps = conn.prepareStatement(
                 "UPDATE produto SET nome=?, preco=?, unidade=?, quantidade=?, qtdMin=?, qtdMax=?, categoria=? WHERE id=?")) {
@@ -71,7 +85,9 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
-    // Excluir
+    /**
+     * Remove um produto do banco pelo ID.
+     */
     public void excluirProduto(int id) throws RemoteException {
         try (PreparedStatement ps = conn.prepareStatement("DELETE FROM produto WHERE id = ?")) {
             ps.setInt(1, id);
@@ -81,9 +97,14 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
+    /**
+     * Registra uma movimentação de entrada ou saída, atualizando o estoque do
+     * produto correspondente.
+     */
     public String registrarMovimentacao(Movimentacao m) throws RemoteException {
         try {
             Produto p = null;
+            // Consulta do produto
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM produto WHERE id = ?")) {
                 ps.setInt(1, m.getIdProduto());
                 ResultSet rs = ps.executeQuery();
@@ -92,23 +113,25 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
                             rs.getInt("id"), rs.getString("nome"),
                             rs.getDouble("preco"), rs.getString("unidade"),
                             rs.getInt("quantidade"), rs.getInt("qtdMin"),
-                            rs.getInt("qtdMax"), rs.getString("categoria")
-                    );
+                            rs.getInt("qtdMax"), rs.getString("categoria"));
                 }
             }
             if (p == null) {
                 return "Produto não encontrado!";
             }
 
+            // Calcula novo estoque
             int novoEstoque = p.getQuantidade()
                     + (m.getTipo() == Movimentacao.Tipo.ENTRADA ? m.getQuantidade() : -m.getQuantidade());
 
+            // Atualiza estoque
             try (PreparedStatement ps = conn.prepareStatement("UPDATE produto SET quantidade = ? WHERE id = ?")) {
                 ps.setInt(1, novoEstoque);
                 ps.setInt(2, p.getId());
                 ps.executeUpdate();
             }
 
+            // Mensagens de aviso
             if (novoEstoque < p.getQuantidadeMinima()) {
                 return "Atenção: produto abaixo do mínimo!";
             }
@@ -121,6 +144,9 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
     }
 
+    /**
+     * Retorna uma lista com todos os produtos cadastrados.
+     */
     public List<Produto> listarProdutos() throws RemoteException {
         List<Produto> lista = new ArrayList<>();
         try (Statement st = conn.createStatement()) {
@@ -138,5 +164,4 @@ public class EstoqueServiceImpl extends UnicastRemoteObject implements EstoqueSe
         }
         return lista;
     }
-
 }

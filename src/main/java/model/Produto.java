@@ -2,17 +2,24 @@ package model;
 
 import java.io.Serializable;
 
+/**
+ * Representa um produto armazenado no estoque. Contém informações como nome,
+ * preço, unidade, quantidade atual, limites mínimo/máximo e categoria.
+ */
 public class Produto implements Serializable {
 
-    private int id;
-    private String nome;
-    private double precoUnitario;
-    private String unidade;
-    private int quantidade;
-    private int quantidadeMinima;
-    private int quantidadeMaxima;
-    private String categoria;
+    private int id;                 // Identificador do produto
+    private String nome;            // Nome do produto
+    private double precoUnitario;   // Preço por unidade
+    private String unidade;         // Tipo de unidade (ex: kg, litro, un)
+    private int quantidade;         // Quantidade atual em estoque
+    private int quantidadeMinima;   // Estoque mínimo recomendado
+    private int quantidadeMaxima;   // Estoque máximo permitido
+    private String categoria;       // Categoria do produto
 
+    /**
+     * Construtor completo do produto.
+     */
     public Produto(int id, String nome, double precoUnitario, String unidade,
             int quantidade, int quantidadeMinima, int quantidadeMaxima,
             String categoria) {
@@ -62,6 +69,9 @@ public class Produto implements Serializable {
         return categoria;
     }
 
+    /**
+     * Atualiza a quantidade atual do produto no estoque.
+     */
     public void setQuantidade(int quantidade) {
         this.quantidade = quantidade;
     }
